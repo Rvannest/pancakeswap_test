@@ -1,14 +1,5 @@
 from web3 import Web3
 
-w3 = Web3(Web3.HTTPProvider('https://data-seed-prebsc-1-s1.bnbchain.org:8545'))
-
-if w3.is_connected():
-    print(f"Connected to BSC Testnet")
-else:
-    print(f"Failed to connected to BSC testnet")
-
-swap_router_address = "0x1b81D678ffb9C0263b24A97847620C99d213eB14"
-
 swap_router_abi = [
   {
     "inputs": [
@@ -593,8 +584,33 @@ swap_router_abi = [
   }
 ]
 
+w3 = Web3(Web3.HTTPProvider('https://data-seed-prebsc-1-s1.bnbchain.org:8545'))
+
+if w3.is_connected():
+    print(f"Connected to BSC Testnet")
+else:
+    print(f"Failed to connected to BSC testnet")
+
+account = w3.eth.account.from_key("Private key here")
+
+# Pancakeswap swap router
+swap_router_address = "0x1b81D678ffb9C0263b24A97847620C99d213eB14"
 swap_router_contract = w3.eth.contract(address=swap_router_address, abi=swap_router_abi)
 
-weth9_address = swap_router_contract.functions.WETH9().call()
+# swap details
+amount_in = w3.toWei(0.1, 'ether') #swapping 0.1 BNB
+path = ["0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", "0x55d398326f99059fF775485246999027B3197955"] #WBNB, BUSD-T (USDT) addresses on BSC
+recipient = "0x638c1546faE0Ce97E1524563F9AE0c42127DbBeE" # test wallet address
+deadline = w3.eth.getBlock("latest")["timestamp"] + 10 * 60     # 10 minutes from current block time
 
-print(f"WETH9 Address: {weth9_address}")
+# prepare transaction
+txn = router_contract.functions.swapExactETHForTokens(0, path, recipient, deadline).buildTransaction({
+  "from": account.address,
+  "value": amount_in, #specify bnb amount
+  "gas": 200000,
+  "gasPrice": w3.toWei("5", "gwei"),
+  "nonce": w3.eth.getTransactionCount(account.address),
+})
+
+signed_txn = w3.eth.account.signTransaction(txn, account.privateKey)
+tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
