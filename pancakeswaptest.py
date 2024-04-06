@@ -1,4 +1,13 @@
 from web3 import Web3
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+Private_Key = os.getenv("My_Private_Key")
+if Private_Key is None:
+  raise ValueError("Private key not found")
+
 
 swap_router_abi = [
   {
@@ -591,17 +600,17 @@ if w3.is_connected():
 else:
     print(f"Failed to connected to BSC testnet")
 
-account = w3.eth.account.from_key("Private key here")
+account = w3.eth.account.from_key(Private_Key)
 
 # Pancakeswap swap router
 swap_router_address = "0x1b81D678ffb9C0263b24A97847620C99d213eB14"
 swap_router_contract = w3.eth.contract(address=swap_router_address, abi=swap_router_abi)
 
 # swap details
-amount_in = w3.toWei(0.1, 'ether') #swapping 0.1 BNB
+amount_in = w3.to_wei(0.1, 'ether') #swapping 0.1 BNB
 path = ["0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", "0x55d398326f99059fF775485246999027B3197955"] #WBNB, BUSD-T (USDT) addresses on BSC
 recipient = "0x638c1546faE0Ce97E1524563F9AE0c42127DbBeE" # test wallet address
-deadline = w3.eth.getBlock("latest")["timestamp"] + 10 * 60     # 10 minutes from current block time
+deadline = w3.eth.get_block("latest")["timestamp"] + 10 * 60     # 10 minutes from current block time
 
 # prepare transaction
 txn = router_contract.functions.swapExactETHForTokens(0, path, recipient, deadline).buildTransaction({
