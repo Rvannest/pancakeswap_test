@@ -618,13 +618,25 @@ params = {
   "recipient": Web3.to_checksum_address("0x638c1546faE0Ce97E1524563F9AE0c42127DbBeE"), #test wallet address
   "deadline": w3.eth.get_block("latest")["timestamp"] + 10 * 60, #deadline in UNIX timestamp
   "amountIn": w3.to_wei(0.02, "ether"), #amount of bnb to swap
-  "amountOutMinimum": 0.01, # minimum of USDT you are willing to receive
+  "amountOutMinimum": w3.to_wei(0.01, "ether"), # minimum of USDT you are willing to receive
   "sqrtPriceLimitX96": 0, #no specific limit
 }
 
+function_params = {
+  "tokenIn": params["tokenIn"],
+  "tokenOut": params["tokenOut"],
+  "fee": params["fee"],
+  "recipient": params["recipient"],
+  "deadline": params["deadline"],
+  "amountIn": params["amountIn"],
+  "amountOutMinimum": params["amountOutMinimum"],
+  "sqrtPriceLimitX96": params["sqrtPriceLimitX96"],
+}
+
 # prepare transaction
-txn = swap_router_contract.functions.exactInputSingle(params).build_transaction({
+txn = swap_router_contract.functions.exactInputSingle(function_params).build_transaction({
   "from": account.address,
+  "value": params["amountIn"],
   "gas": 100000,
   "gasPrice": w3.to_wei("5", "gwei"),
   "nonce": w3.eth.get_transaction_count(account.address),
