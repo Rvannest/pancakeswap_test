@@ -612,20 +612,20 @@ swap_router_contract = w3.eth.contract(address=swap_router_address, abi=swap_rou
 
 # paratmeters for the swap
 params = {
-  "tokenIn": Web3.to_checksum_address("0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"), #WBNB
-  "tokenOut": Web3.to_checksum_address("0x55d398326f99059fF775485246999027B3197955"), #USDT
+  "tokenIn": Web3.to_checksum_address("0x638c1546faE0Ce97E1524563F9AE0c42127DbBeE"), # tBNB instead of WBNB
+  "tokenOut": Web3.to_checksum_address("0x337610d27c682E347C9cD60BD4b3b107C9d34dDd"), #USDT, needed to change the address to the testnet addres instead I beleive
   "fee": 3000, # fee tier of the pool 0.3%
   "recipient": Web3.to_checksum_address("0x638c1546faE0Ce97E1524563F9AE0c42127DbBeE"), #test wallet address
   "deadline": w3.eth.get_block("latest")["timestamp"] + 10 * 60, #deadline in UNIX timestamp
-  "amountIn": w3.to_wei(0.1, "ether"), #amount of bnb to swap
-  "amountOutMinimum": 0, # minimum of USDT you are willing to receive
+  "amountIn": w3.to_wei(0.02, "ether"), #amount of bnb to swap
+  "amountOutMinimum": 0.01, # minimum of USDT you are willing to receive
   "sqrtPriceLimitX96": 0, #no specific limit
 }
 
 # prepare transaction
 txn = swap_router_contract.functions.exactInputSingle(params).build_transaction({
   "from": account.address,
-  "gas": 200000,
+  "gas": 100000,
   "gasPrice": w3.to_wei("5", "gwei"),
   "nonce": w3.eth.get_transaction_count(account.address),
    # 'value': is only necessary if swapping the native coin (BNB), otherwise omit
@@ -633,5 +633,11 @@ txn = swap_router_contract.functions.exactInputSingle(params).build_transaction(
 
 signed_txn = w3.eth.account.sign_transaction(txn, account._private_key)
 tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
 
 print(f"Transaction hash: {tx_hash.hex()}")
+
+if tx_receipt.status == 1:
+  print(f"Transaction succeeded")
+else:
+  print(f"Transaction failed")
