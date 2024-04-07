@@ -1,4 +1,6 @@
 from web3 import Web3
+from web3.middleware import geth_poa_middleware
+
 from dotenv import load_dotenv
 import os
 
@@ -595,6 +597,8 @@ swap_router_abi = [
 
 w3 = Web3(Web3.HTTPProvider('https://data-seed-prebsc-1-s1.bnbchain.org:8545'))
 
+w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
 if w3.is_connected():
     print(f"Connected to BSC Testnet")
 else:
@@ -606,20 +610,28 @@ account = w3.eth.account.from_key(Private_Key)
 swap_router_address = "0x1b81D678ffb9C0263b24A97847620C99d213eB14"
 swap_router_contract = w3.eth.contract(address=swap_router_address, abi=swap_router_abi)
 
-# swap details
-amount_in = w3.to_wei(0.1, 'ether') #swapping 0.1 BNB
-path = ["0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", "0x55d398326f99059fF775485246999027B3197955"] #WBNB, BUSD-T (USDT) addresses on BSC
-recipient = "0x638c1546faE0Ce97E1524563F9AE0c42127DbBeE" # test wallet address
-deadline = w3.eth.get_block("latest")["timestamp"] + 10 * 60     # 10 minutes from current block time
+# paratmeters for the swap
+params = {
+  "tokenIn": Web3.to_checksum_address("0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"), #WBNB
+  "tokenOut": Web3.to_checksum_address("0x55d398326f99059fF775485246999027B3197955"), #USDT
+  "fee": 3000, # fee tier of the pool 0.3%
+  "recipient": Web3.to_checksum_address("0x638c1546faE0Ce97E1524563F9AE0c42127DbBeE"), #test wallet address
+  "deadline": w3.eth.get_block("latest")["timestamp"] + 10 * 60, #deadline in UNIX timestamp
+  "amountIn": w3.to_wei(0.1, "ether"), #amount of bnb to swap
+  "amountOutMinimum": 0, # minimum of USDT you are willing to receive
+  "sqrtPriceLimitX96": 0, #no specific limit
+}
 
 # prepare transaction
-txn = router_contract.functions.swapExactETHForTokens(0, path, recipient, deadline).buildTransaction({
+txn = swap_router_contract.functions.exactInputSingle(params).build_transaction({
   "from": account.address,
-  "value": amount_in, #specify bnb amount
   "gas": 200000,
-  "gasPrice": w3.toWei("5", "gwei"),
-  "nonce": w3.eth.getTransactionCount(account.address),
+  "gasPrice": w3.to_wei("5", "gwei"),
+  "nonce": w3.eth.get_transaction_count(account.address),
+   # 'value': is only necessary if swapping the native coin (BNB), otherwise omit
 })
 
-signed_txn = w3.eth.account.signTransaction(txn, account.privateKey)
-tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+signed_txn = w3.eth.account.sign_transaction(txn, account._private_key)
+tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+
+print(f"Transaction hash: {tx_hash.hex()}")
