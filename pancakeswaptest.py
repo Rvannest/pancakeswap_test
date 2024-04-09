@@ -63,7 +63,7 @@ w3.eth.wait_for_transaction_receipt(approve_txn_hash)
 params = {
   "tokenIn": Web3.to_checksum_address("0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"), # now its WBNB testnet
   "tokenOut": Web3.to_checksum_address("0x337610d27c682E347C9cD60BD4b3b107C9d34dDd"), #USDT testnet
-  "fee": 500, # fee tier of the pool 0.3%
+  "fee": 3000, # fee tier of the pool 0.3%
   "recipient": Web3.to_checksum_address("0x638c1546faE0Ce97E1524563F9AE0c42127DbBeE"), #test wallet address
   "deadline": int(time.time()) + 600, #10 mins from now
   "amountIn": w3.to_wei(0.01, "ether"), #amount of wbnb to swap
