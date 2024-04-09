@@ -4,6 +4,7 @@ from web3.middleware import geth_poa_middleware
 from dotenv import load_dotenv
 import os
 import json
+import time
 
 load_dotenv()
 
@@ -63,7 +64,7 @@ params = {
   "tokenOut": Web3.to_checksum_address("0x337610d27c682E347C9cD60BD4b3b107C9d34dDd"), #USDT
   "fee": 3000, # fee tier of the pool 0.3%
   "recipient": Web3.to_checksum_address("0x638c1546faE0Ce97E1524563F9AE0c42127DbBeE"), #test wallet address
-  "deadline": w3.eth.get_block("latest")["timestamp"] + 10 * 60, #deadline in UNIX timestamp
+  "deadline": int(time.time()) + 600, #10 mins from now
   "amountIn": w3.to_wei(0.01, "ether"), #amount of wbnb to swap
   "amountOutMinimum": w3.to_wei(0.00, "ether"), # minimum of USDT you are willing to receive
   "sqrtPriceLimitX96": 0, #no specific limit
