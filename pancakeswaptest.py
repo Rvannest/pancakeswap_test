@@ -34,7 +34,8 @@ if Private_Key is None:
 account_privatekey = w3.eth.account.from_key(Private_Key)
 
 # Pancakeswap swap router, swap router abi is at the top of the code
-swap_router_address = "0x1b81D678ffb9C0263b24A97847620C99d213eB14" # periphery mainnet
+swap_router_address = "	0x13f4EA83D0bd40E75C8222255bc855a974568Dd4" # smart router mainnnet
+# swap_router_address = "0x1b81D678ffb9C0263b24A97847620C99d213eB14" # periphery mainnet
 # swap_router_address = "0x9a489505a00cE272eAa5e07Dba6491314CaE3796" # swap router v3, bsc testnet (near the bottom of the address documentation)
 # swap_router_address = "0x1b81D678ffb9C0263b24A97847620C99d213eB14" #swap router v3, periphery bsc testnet
 swap_router_contract = w3.eth.contract(address=swap_router_address, abi=swap_router_abi)
@@ -65,11 +66,11 @@ w3.eth.wait_for_transaction_receipt(approve_txn_hash)
 params = {
   "tokenIn": Web3.to_checksum_address(wbnb_contract_address), # now its WBNB mainnet
   "tokenOut": Web3.to_checksum_address("0x55d398326f99059fF775485246999027B3197955"), #USDT mainnet
-  "fee": 2500, # fee tier of the pool 0.3%
+  "fee": 3000, # fee tier of the pool 0.3%
   "recipient": Web3.to_checksum_address("0x638c1546faE0Ce97E1524563F9AE0c42127DbBeE"), #test wallet address
   "deadline": int(time.time()) + 600, #10 mins from now
   "amountIn": w3.to_wei(0.001, "ether"), #amount of wbnb to swap
-  "amountOutMinimum": w3.to_wei(0.10, "ether"), # minimum of USDT you are willing to receive
+  "amountOutMinimum": w3.to_wei(0.01, "ether"), # minimum of USDT you are willing to receive
   "sqrtPriceLimitX96": 0, #no specific limit
 }
 
@@ -89,7 +90,7 @@ params_tuple = (
 # prepare transaction
 txn = swap_router_contract.functions.exactInputSingle(params_tuple).build_transaction({
   "from": sender_address,
-  #"value": params["amountIn"],
+  "value": params["amountIn"],
   "gas": 100000,
   "gasPrice": w3.to_wei("1", "gwei"),
   "nonce": w3.eth.get_transaction_count(sender_address),
